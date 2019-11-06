@@ -144,6 +144,7 @@ async function run(): Promise<void> {
       completed_at: new Date().toISOString(),
       status: 'completed',
       check_run_id: checkId,
+      conclusion: 'success',
     });
   } catch (err) {
     core.error(err);
