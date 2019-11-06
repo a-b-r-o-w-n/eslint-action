@@ -5,6 +5,8 @@ import eslint, { CLIEngine } from 'eslint';
 import minimatch from 'minimatch';
 import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
+const { GITHUB_ACTION, GITHUB_WORKSPACE } = process.env;
+
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request;
 
@@ -44,12 +46,6 @@ const filterByGlob = (globs: string[]) => (file: string): boolean => {
 
 const OWNER = github.context.repo.owner;
 const REPO = github.context.repo.repo;
-
-interface PrResponse {
-  endCursor?: string;
-  hasNextPage?: boolean;
-  files: string[];
-}
 
 async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
   const { repository } = await client.graphql(
@@ -139,7 +135,7 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
       }
 
       annotations.push({
-        path: filePath.replace(`${process.env.GITHUB_WORKSPACE || ''}/`, ''),
+        path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
         start_line: line,
         end_line: line,
         annotation_level: 'failure',
@@ -151,7 +147,7 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
   return {
     conclusion: errorCount > 0 ? 'failure' : 'success',
     output: {
-      title: 'Eslint',
+      title: GITHUB_ACTION,
       summary: `${errorCount} error(s) found`,
       annotations,
     },
@@ -167,8 +163,6 @@ async function run(): Promise<void> {
     return;
   }
 
-  console.log(JSON.stringify(github.context.payload, null, 2));
-
   try {
     const oktokit = new github.GitHub(token);
 
@@ -180,7 +174,7 @@ async function run(): Promise<void> {
       started_at: new Date().toISOString(),
       head_sha: getSha(),
       status: 'in_progress',
-      name: 'Eslint',
+      name: GITHUB_ACTION,
     });
 
     const files = await getChangedFiles(oktokit, prNumber, filesGlob);
@@ -197,8 +191,7 @@ async function run(): Promise<void> {
       ...payload,
     });
   } catch (err) {
-    core.error(err);
-    core.setFailed('Error linting files.');
+    core.setFailed(err.message ? err.message : 'Error linting files.');
   }
 }
 
