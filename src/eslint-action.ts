@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import eslint from 'eslint';
+import eslint, { CLIEngine } from 'eslint';
 import minimatch from 'minimatch';
+import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request;
@@ -12,6 +13,13 @@ const getPrNumber = (): number | undefined => {
   }
 
   return pullRequest.number;
+};
+
+const processArrayInput = (key: string, required = false): string[] => {
+  return core
+    .getInput(key, { required })
+    .split(',')
+    .map(e => e.trim());
 };
 
 const filterByGlob = (globs: string[]) => (file: string): boolean => {
@@ -93,20 +101,56 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, filesGlo
   return files.filter(filterByGlob(filesGlob));
 }
 
+function lint(files: string[]): CLIEngine.LintReport {
+  const extensions = processArrayInput('extensions', true);
+  const ignoreGlob = processArrayInput('ignore');
+
+  const linter = new eslint.CLIEngine({
+    extensions,
+    ignorePattern: ignoreGlob,
+  });
+
+  return linter.executeOnFiles(files);
+}
+
+function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams> {
+  const { errorCount, results } = report;
+  const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
+
+  for (const result of results) {
+    const { filePath, messages } = result;
+
+    console.log(filePath);
+    for (const lintMessage of messages) {
+      const { line, severity, ruleId, message } = lintMessage;
+
+      if (severity !== 2) {
+        continue;
+      }
+
+      annotations.push({
+        path: filePath.replace(`${process.env.GITHUB_WORKSPACE || ''}/`, ''),
+        start_line: line,
+        end_line: line,
+        annotation_level: 'failure',
+        message: `[${ruleId}] ${message}`,
+      });
+    }
+  }
+
+  return {
+    conclusion: errorCount > 0 ? 'failure' : 'success',
+    output: {
+      title: 'Eslint',
+      summary: `${errorCount} error(s) found`,
+      annotations,
+    },
+  };
+}
+
 async function run(): Promise<void> {
   const token = core.getInput('repo-token', { required: true });
-  const extensions = core
-    .getInput('extensions', { required: true })
-    .split(',')
-    .map(e => e.trim());
-  const filesGlob = core
-    .getInput('files')
-    .split(',')
-    .map(e => e.trim());
-  const ignoreGlob = core
-    .getInput('ignore')
-    .split(',')
-    .map(e => e.trim());
+  const filesGlob = processArrayInput('files');
   const prNumber = getPrNumber();
 
   if (!prNumber) {
@@ -129,14 +173,8 @@ async function run(): Promise<void> {
 
     const files = await getChangedFiles(oktokit, prNumber, filesGlob);
 
-    const linter = new eslint.CLIEngine({
-      extensions,
-      ignorePattern: ignoreGlob,
-    });
-
-    const results = linter.executeOnFiles(files);
-
-    console.log(results);
+    const report = lint(files);
+    const payload = processReport(report);
 
     await oktokit.checks.update({
       owner: OWNER,
@@ -144,7 +182,7 @@ async function run(): Promise<void> {
       completed_at: new Date().toISOString(),
       status: 'completed',
       check_run_id: checkId,
-      conclusion: 'success',
+      ...payload,
     });
   } catch (err) {
     core.error(err);
