@@ -4,7 +4,7 @@
   "description": "eslint-action",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -21,5 +21,10 @@
     "@actions/core": "^1.2.0",
     "@actions/github": "^1.1.0",
     "eslint": "^6.6.0"
+  },
+  "devDependencies": {
+    "@types/eslint": "^6.1.3",
+    "prettier": "^1.18.2",
+    "typescript": "^3.7.2"
   }
 }
