@@ -5,7 +5,10 @@ import eslint, { CLIEngine } from 'eslint';
 import minimatch from 'minimatch';
 import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
-const { GITHUB_ACTION, GITHUB_WORKSPACE } = process.env;
+const { GITHUB_WORKSPACE } = process.env;
+const OWNER = github.context.repo.owner;
+const REPO = github.context.repo.repo;
+const CHECK_NAME = 'Eslint';
 
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request;
@@ -43,9 +46,6 @@ const filterByGlob = (globs: string[]) => (file: string): boolean => {
 
   return false;
 };
-
-const OWNER = github.context.repo.owner;
-const REPO = github.context.repo.repo;
 
 async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
   const { repository } = await client.graphql(
@@ -147,7 +147,7 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
   return {
     conclusion: errorCount > 0 ? 'failure' : 'success',
     output: {
-      title: GITHUB_ACTION,
+      title: CHECK_NAME,
       summary: `${errorCount} error(s) found`,
       annotations,
     },
@@ -174,7 +174,7 @@ async function run(): Promise<void> {
       started_at: new Date().toISOString(),
       head_sha: getSha(),
       status: 'in_progress',
-      name: GITHUB_ACTION,
+      name: CHECK_NAME,
     });
 
     const files = await getChangedFiles(oktokit, prNumber, filesGlob);
