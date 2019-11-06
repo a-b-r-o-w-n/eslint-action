@@ -157,6 +157,8 @@ async function run(): Promise<void> {
     return;
   }
 
+  console.log(JSON.stringify(github.context));
+
   try {
     const oktokit = new github.GitHub(token);
 
