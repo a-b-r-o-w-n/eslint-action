@@ -3,6 +3,7 @@ import path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import eslint from 'eslint';
+import minimatch from 'minimatch';
 
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request;
@@ -14,8 +15,14 @@ const getPrNumber = (): number | undefined => {
   return pullRequest.number;
 };
 
-const filterByExtension = (extensions: string[]) => (file: string) => {
-  return extensions.includes(path.extname(file));
+const filterByGlob = (globs: string[]) => (file: string) => {
+  for (const glob of globs) {
+    if (minimatch(file, glob)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const OWNER = github.context.repo.owner;
@@ -62,7 +69,7 @@ async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCur
   };
 }
 
-async function getChangedFiles(client: github.GitHub, prNumber: number, extensions: string[]): Promise<string[]> {
+async function getChangedFiles(client: github.GitHub, prNumber: number, filesGlob: string[]): Promise<string[]> {
   let files: string[] = [];
   let hasNextPage = true;
   let startCursor: string | undefined = undefined;
@@ -77,16 +84,18 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, extensio
     } catch (err) {
       core.error(err);
       core.setFailed("Error occurred getting changed files.");
-      return files.filter(filterByExtension(extensions));
+      return files.filter(filterByGlob(filesGlob));
     }
   }
 
-  return files.filter(filterByExtension(extensions));
+  return files.filter(filterByGlob(filesGlob));
 }
 
 async function run() {
   const token = core.getInput('repo-token', { required: true });
   const extensions = core.getInput('extensions', { required: true }).split(',').map(e => e.trim());
+  const filesGlob = core.getInput('files').split(',').map(e => e.trim());
+  const ignoreGlob = core.getInput('ignore').split(',').map(e => e.trim());
   const prNumber = getPrNumber();
 
   if (!prNumber) {
@@ -96,7 +105,16 @@ async function run() {
 
   const oktokit = new github.GitHub(token);
 
-  console.log(await getChangedFiles(oktokit, prNumber, extensions));
+  const files = await getChangedFiles(oktokit, prNumber, filesGlob);
+
+  const linter = new eslint.CLIEngine({
+    extensions,
+    ignorePattern: ignoreGlob
+  });
+
+  const results = linter.executeOnFiles(files);
+
+  console.log(results);
 }
 
 run();

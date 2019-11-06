@@ -21,7 +21,8 @@
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/github": "^1.1.0",
-    "eslint": "^6.6.0"
+    "eslint": "^6.6.0",
+    "minimatch": "^3.0.4"
   },
   "devDependencies": {
     "@types/eslint": "^6.1.3",

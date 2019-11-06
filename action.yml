@@ -7,6 +7,12 @@ inputs:
   extensions:
     description: "File extensions to lint. Ex: .js,.jsx,.ts,.tsx"
     default: ".js,.jsx,.ts,.tsx"
+  files:
+    description: "Glob pattern of files to be linted."
+    default: "**/*"
+  ignore:
+    description: "Glob pattern to ignore from linting."
+    default: "**/node_modules/**"
 runs:
   using: "node12"
   main: "lib/eslint-action.js"
