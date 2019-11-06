@@ -3,11 +3,11 @@ name: Example Workflow
 on: [pull_request]
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v1
-      - uses: ./
+      - uses: ./action.yml
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
