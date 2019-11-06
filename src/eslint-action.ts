@@ -165,21 +165,19 @@ async function run(): Promise<void> {
 
   try {
     const oktokit = new github.GitHub(token);
-
-    const {
-      data: { id: checkId },
-    } = await oktokit.checks.create({
-      owner: OWNER,
-      repo: REPO,
-      started_at: new Date().toISOString(),
-      head_sha: getSha(),
-      status: 'in_progress',
-      name: CHECK_NAME,
-    });
-
     const files = await getChangedFiles(oktokit, prNumber, filesGlob);
 
     if (files.length > 0) {
+      const {
+        data: { id: checkId },
+      } = await oktokit.checks.create({
+        owner: OWNER,
+        repo: REPO,
+        started_at: new Date().toISOString(),
+        head_sha: getSha(),
+        status: 'in_progress',
+        name: CHECK_NAME,
+      });
       const report = lint(files);
       const payload = processReport(report);
 
