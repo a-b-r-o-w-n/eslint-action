@@ -5,8 +5,8 @@ inputs:
     description: "Token used to interact with the Github API."
     required: true
   extensions:
-    description: "File extensions to lint. Ex: js,jsx,ts,tsx"
-    default: "js,jsx,ts,tsx"
+    description: "File extensions to lint. Ex: .js,.jsx,.ts,.tsx"
+    default: ".js,.jsx,.ts,.tsx"
 runs:
   using: "node12"
   main: "lib/eslint-action.js"
