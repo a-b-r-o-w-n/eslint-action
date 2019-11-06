@@ -179,17 +179,21 @@ async function run(): Promise<void> {
 
     const files = await getChangedFiles(oktokit, prNumber, filesGlob);
 
-    const report = lint(files);
-    const payload = processReport(report);
+    if (files.length > 0) {
+      const report = lint(files);
+      const payload = processReport(report);
 
-    await oktokit.checks.update({
-      owner: OWNER,
-      repo: REPO,
-      completed_at: new Date().toISOString(),
-      status: 'completed',
-      check_run_id: checkId,
-      ...payload,
-    });
+      await oktokit.checks.update({
+        owner: OWNER,
+        repo: REPO,
+        completed_at: new Date().toISOString(),
+        status: 'completed',
+        check_run_id: checkId,
+        ...payload,
+      });
+    } else {
+      core.info('No files to lint.');
+    }
   } catch (err) {
     core.setFailed(err.message ? err.message : 'Error linting files.');
   }
