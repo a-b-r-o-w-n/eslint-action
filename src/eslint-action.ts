@@ -56,7 +56,7 @@ async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCur
   };
 }
 
-async function getChangedFiles(client: github.GitHub, prNumber: number) {
+async function getChangedFiles(client: github.GitHub, prNumber: number): Promise<string[]> {
   let files: string[] = [];
   let hasNextPage = true;
   let startCursor: string | undefined = undefined;
@@ -71,6 +71,7 @@ async function getChangedFiles(client: github.GitHub, prNumber: number) {
     } catch (err) {
       core.error(err);
       core.setFailed("Error occurred getting changed files.");
+      return [];
     }
   }
 
