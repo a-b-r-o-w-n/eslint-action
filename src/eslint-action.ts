@@ -151,7 +151,7 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
 async function run(): Promise<void> {
   const token = core.getInput('repo-token', { required: true });
   const filesGlob = processArrayInput('files');
-  const prNumber = getPrNumber();
+  const prNumber = getPrNumber()
 
   if (!prNumber) {
     return;
