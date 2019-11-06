@@ -22,7 +22,7 @@ interface PrResponse {
 }
 
 async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
-  const results = await client.graphql(`
+  const { repository } = await client.graphql(`
     query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $prNumber) {
@@ -44,7 +44,7 @@ async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCur
     }
   `, { owner: OWNER, repo: REPO, prNumber, startCursor });
 
-  const pr = results.data.pullRequest;
+  const pr = repository.pullRequest;
 
   if (!pr || !pr.files) {
     return { files: [] };
