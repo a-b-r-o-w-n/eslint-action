@@ -8,6 +8,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - uses: ./action.yml
+      - uses: ./
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
