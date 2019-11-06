@@ -15,6 +15,16 @@ const getPrNumber = (): number | undefined => {
   return pullRequest.number;
 };
 
+const getSha = (): string => {
+  const pullRequest = github.context.payload.pull_request;
+
+  if (!pullRequest) {
+    return github.context.sha;
+  }
+
+  return pullRequest.head.sha;
+};
+
 const processArrayInput = (key: string, required = false): string[] => {
   return core
     .getInput(key, { required })
@@ -151,7 +161,7 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
 async function run(): Promise<void> {
   const token = core.getInput('repo-token', { required: true });
   const filesGlob = processArrayInput('files');
-  const prNumber = getPrNumber();
+  const prNumber = getPrNumber()
 
   if (!prNumber) {
     return;
@@ -168,7 +178,7 @@ async function run(): Promise<void> {
       owner: OWNER,
       repo: REPO,
       started_at: new Date().toISOString(),
-      head_sha: github.context.sha,
+      head_sha: getSha(),
       status: 'in_progress',
       name: 'Eslint',
     });
