@@ -109,7 +109,7 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, filesGlo
 
 function lint(files: string[]): CLIEngine.LintReport {
   const extensions = processArrayInput('extensions', true);
-  const ignoreGlob = processArrayInput('ignore');
+  const ignoreGlob = processArrayInput('ignore')
 
   const linter = new eslint.CLIEngine({
     extensions,
