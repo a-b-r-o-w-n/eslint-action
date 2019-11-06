@@ -12,6 +12,10 @@ const getPrNumber = (): number | undefined => {
   return pullRequest.number;
 };
 
+const filterByExtension = (extensions: string[]) => (file: string) => {
+  return extensions.includes(file);
+}
+
 const OWNER = github.context.repo.owner;
 const REPO = github.context.repo.repo;
 
@@ -56,7 +60,7 @@ async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCur
   };
 }
 
-async function getChangedFiles(client: github.GitHub, prNumber: number): Promise<string[]> {
+async function getChangedFiles(client: github.GitHub, prNumber: number, extensions: string[]): Promise<string[]> {
   let files: string[] = [];
   let hasNextPage = true;
   let startCursor: string | undefined = undefined;
@@ -71,15 +75,16 @@ async function getChangedFiles(client: github.GitHub, prNumber: number): Promise
     } catch (err) {
       core.error(err);
       core.setFailed("Error occurred getting changed files.");
-      return [];
+      return files.filter(filterByExtension(extensions));
     }
   }
 
-  return files;
+  return files.filter(filterByExtension(extensions));
 }
 
 async function run() {
   const token = core.getInput('repo-token', { required: true });
+  const extensions = core.getInput('extensions', { required: true }).split(',').map(e => e.trim());
   const prNumber = getPrNumber();
 
   if (!prNumber) {
@@ -89,7 +94,7 @@ async function run() {
 
   const oktokit = new github.GitHub(token);
 
-  console.log(await getChangedFiles(oktokit, prNumber));
+  console.log(await getChangedFiles(oktokit, prNumber, extensions));
 }
 
 run();
