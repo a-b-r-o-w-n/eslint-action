@@ -151,13 +151,11 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
 async function run(): Promise<void> {
   const token = core.getInput('repo-token', { required: true });
   const filesGlob = processArrayInput('files');
-  const prNumber = getPrNumber();
+  const prNumber = getPrNumber()
 
   if (!prNumber) {
     return;
   }
-
-  console.log(JSON.stringify(github.context, null, 2));
 
   try {
     const oktokit = new github.GitHub(token);
@@ -168,7 +166,7 @@ async function run(): Promise<void> {
       owner: OWNER,
       repo: REPO,
       started_at: new Date().toISOString(),
-      head_sha: github.context.sha,
+      head_sha: github.context.payload.head.sha,
       status: 'in_progress',
       name: 'Eslint',
     });
