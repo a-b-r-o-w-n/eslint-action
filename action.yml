@@ -1,0 +1,12 @@
+name: "Eslint Action"
+description: "Lints changed files and annotates pull request diffs with errors."
+inputs:
+  repo-token:
+    description: "Token used to interact with the Github API".
+    required: true
+runs:
+  using: "node12"
+  main: "lib/eslint-action.js"
+branding:
+  icon: "lock"
+  color: "yellow"
