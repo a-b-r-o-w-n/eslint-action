@@ -23,7 +23,7 @@ interface PrResponse {
 
 async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
   const results = await client.graphql(`
-    query {
+    query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Integer!, $startCursor: String) {
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $prNumber) {
           files(first: 100, after: $startCursor) {
@@ -62,11 +62,16 @@ async function getChangedFiles(client: github.GitHub, prNumber: number) {
   let startCursor: string | undefined = undefined;
 
   while (hasNextPage) {
-    const result = await fetchFilesBatch(client, prNumber, startCursor);
+    try {
+      const result = await fetchFilesBatch(client, prNumber, startCursor);
 
-    files = files.concat(result.files);
-    hasNextPage = result.hasNextPage;
-    startCursor = result.endCursor;
+      files = files.concat(result.files);
+      hasNextPage = result.hasNextPage;
+      startCursor = result.endCursor;
+    } catch (err) {
+      core.error(err);
+      core.setFailed("Error occurred getting changed files.");
+    }
   }
 
   return files;
