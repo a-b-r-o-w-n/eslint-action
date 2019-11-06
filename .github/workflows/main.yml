@@ -1,0 +1,8 @@
+name: Example Workflow
+
+on: [pull_request]
+
+jobs:
+  lint:
+    steps:
+      - uses: ./
