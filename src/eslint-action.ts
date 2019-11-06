@@ -1,3 +1,5 @@
+import path from 'path';
+
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import eslint from 'eslint';
@@ -13,7 +15,7 @@ const getPrNumber = (): number | undefined => {
 };
 
 const filterByExtension = (extensions: string[]) => (file: string) => {
-  return extensions.includes(file);
+  return extensions.includes(path.extname(file));
 }
 
 const OWNER = github.context.repo.owner;
