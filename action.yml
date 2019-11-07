@@ -17,5 +17,5 @@ runs:
   using: "node12"
   main: "lib/eslint-action.js"
 branding:
-  icon: "lock"
+  icon: "tool"
   color: "yellow"
