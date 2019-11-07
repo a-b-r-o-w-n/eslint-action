@@ -1,4 +1,4 @@
-name: "Eslint Action"
+name: "Eslint Annotate"
 description: "Lints changed files and annotates pull request diffs with errors."
 inputs:
   repo-token:
