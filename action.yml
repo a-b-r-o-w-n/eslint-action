@@ -1,0 +1,21 @@
+name: "Eslint Action"
+description: "Lints changed files and annotates pull request diffs with errors."
+inputs:
+  repo-token:
+    description: "Token used to interact with the Github API."
+    required: true
+  extensions:
+    description: "File extensions to lint. Ex: .js,.jsx,.ts,.tsx"
+    default: ".js,.jsx,.ts,.tsx"
+  files:
+    description: "Glob pattern of files to be linted."
+    default: "**/*"
+  ignore:
+    description: "Glob pattern to ignore from linting."
+    default: "**/node_modules/**"
+runs:
+  using: "node12"
+  main: "lib/eslint-action.js"
+branding:
+  icon: "tool"
+  color: "yellow"

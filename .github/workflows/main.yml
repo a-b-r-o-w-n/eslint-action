@@ -1,0 +1,14 @@
+name: Example Workflow
+
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: ./
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          files: "src/**/*"
