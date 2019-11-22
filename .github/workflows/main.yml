@@ -8,7 +8,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - uses: ./
+      - name: Lint
+        uses: ./
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           files: "src/**/*"
+      - name: Test
+        run: npm test -- --coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
