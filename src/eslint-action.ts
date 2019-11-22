@@ -2,8 +2,9 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import eslint, { CLIEngine } from 'eslint';
-import minimatch from 'minimatch';
 import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
+
+import { filterFiles } from './fileUtils';
 
 const { GITHUB_WORKSPACE } = process.env;
 const OWNER = github.context.repo.owner;
@@ -35,16 +36,6 @@ const processArrayInput = (key: string, required = false): string[] => {
     .getInput(key, { required })
     .split(',')
     .map(e => e.trim());
-};
-
-const filterByGlob = (globs: string[]) => (file: string): boolean => {
-  for (const glob of globs) {
-    if (minimatch(file, glob)) {
-      return true;
-    }
-  }
-
-  return false;
 };
 
 async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
@@ -100,11 +91,11 @@ async function getChangedFiles(client: github.GitHub, prNumber: number, filesGlo
     } catch (err) {
       core.error(err);
       core.setFailed('Error occurred getting changed files.');
-      return files.filter(filterByGlob(filesGlob));
+      return filterFiles(files, filesGlob);
     }
   }
 
-  return files.filter(filterByGlob(filesGlob));
+  return filterFiles(files, filesGlob);
 }
 
 function lint(files: string[]): CLIEngine.LintReport {
