@@ -4,7 +4,7 @@ import * as github from '@actions/github';
 import eslint, { CLIEngine } from 'eslint';
 import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
-import { filterFiles } from './fileUtils';
+import { getChangedFiles } from './fileUtils';
 
 const { GITHUB_WORKSPACE } = process.env;
 const OWNER = github.context.repo.owner;
@@ -38,66 +38,6 @@ const processArrayInput = (key: string, required = false): string[] => {
     .map(e => e.trim());
 };
 
-async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
-  const { repository } = await client.graphql(
-    `
-    query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
-      repository(owner: $owner, name: $repo) {
-        pullRequest(number: $prNumber) {
-          files(first: 100, after: $startCursor) {
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            totalCount
-            edges {
-              cursor
-              node {
-                path
-              }
-            }
-          }
-        }
-      }
-    }
-  `,
-    { owner: OWNER, repo: REPO, prNumber, startCursor }
-  );
-
-  const pr = repository.pullRequest;
-
-  if (!pr || !pr.files) {
-    return { files: [] };
-  }
-
-  return {
-    ...pr.files.pageInfo,
-    files: pr.files.edges.map(e => e.node.path),
-  };
-}
-
-async function getChangedFiles(client: github.GitHub, prNumber: number, filesGlob: string[]): Promise<string[]> {
-  let files: string[] = [];
-  let hasNextPage = true;
-  let startCursor: string | undefined = undefined;
-
-  while (hasNextPage) {
-    try {
-      const result = await fetchFilesBatch(client, prNumber, startCursor);
-
-      files = files.concat(result.files);
-      hasNextPage = result.hasNextPage;
-      startCursor = result.endCursor;
-    } catch (err) {
-      core.error(err);
-      core.setFailed('Error occurred getting changed files.');
-      return filterFiles(files, filesGlob);
-    }
-  }
-
-  return filterFiles(files, filesGlob);
-}
-
 function lint(files: string[]): CLIEngine.LintReport {
   const extensions = processArrayInput('extensions', true);
   const ignoreGlob = processArrayInput('ignore');
@@ -117,7 +57,6 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
   for (const result of results) {
     const { filePath, messages } = result;
 
-    console.log(filePath);
     for (const lintMessage of messages) {
       const { line, severity, ruleId, message } = lintMessage;
 
@@ -150,14 +89,10 @@ async function run(): Promise<void> {
   const filesGlob = processArrayInput('files');
   const prNumber = getPrNumber();
 
-  if (!prNumber) {
-    return;
-  }
-
   try {
     const oktokit = new github.GitHub(token);
     core.debug('Fetching files to lint.');
-    const files = await getChangedFiles(oktokit, prNumber, filesGlob);
+    const files = await getChangedFiles(oktokit, filesGlob, prNumber, getSha());
     core.debug(`${files.length} files match ${filesGlob}.`);
 
     if (files.length > 0) {
