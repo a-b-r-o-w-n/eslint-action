@@ -6,7 +6,9 @@ const REPO = github?.context?.repo?.repo;
 export async function fetchFilesBatchPR(
   client: github.GitHub,
   prNumber: number,
-  startCursor?: string
+  startCursor?: string,
+  owner: string = OWNER,
+  repo: string = REPO
 ): Promise<PrResponse> {
   const { repository } = await client.graphql(
     `
@@ -30,7 +32,7 @@ export async function fetchFilesBatchPR(
       }
     }
   `,
-    { owner: OWNER, repo: REPO, prNumber, startCursor }
+    { owner, repo, prNumber, startCursor }
   );
 
   const pr = repository.pullRequest;
