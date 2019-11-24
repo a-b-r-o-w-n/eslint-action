@@ -5,7 +5,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import micromatch from 'micromatch';
 
-import { fetchFilesBatchPR } from './api';
+import { fetchFilesBatchPR, fetchFilesBatchCommit } from './api';
 
 export const filterFiles = (files: string[], globs: string[]): string[] => {
   const result: string[] = [];
@@ -52,6 +52,8 @@ export async function getChangedFiles(
 
   if (prNumber) {
     files = await getFilesFromPR(client, prNumber);
+  } else {
+    files = await fetchFilesBatchCommit(client, sha);
   }
 
   return filterFiles(files, filesGlob);

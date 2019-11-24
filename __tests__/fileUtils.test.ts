@@ -51,7 +51,14 @@ describe('getChangedFiles', () => {
   });
 
   describe('when change is a commit', () => {
-    it('fetches changed files for commit', () => {});
+    beforeEach(() => {
+      (api.fetchFilesBatchCommit as jest.Mock).mockResolvedValue([]);
+    });
+
+    it('fetches changed files for commit', async () => {
+      await getChangedFiles(client, filesGlob, undefined, sha);
+      expect(api.fetchFilesBatchCommit).toHaveBeenCalledWith(client, sha);
+    });
   });
 });
 
