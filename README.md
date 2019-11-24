@@ -15,7 +15,7 @@ jobs:
   lint:
     steps:
       - uses: actions/checkout@v1
-      - uses: a-b-r-o-w-n/eslint-action@preview
+      - uses: a-b-r-o-w-n/eslint-action@master
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           files: "src/**/*"
