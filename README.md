@@ -9,7 +9,7 @@ In `.github/workflows/main.yml:
 ```yml
 name: Example Workflow
 
-on: [pull_request]
+on: [pull_request, push]
 
 jobs:
   lint:
