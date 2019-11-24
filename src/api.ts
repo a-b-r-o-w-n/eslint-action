@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 const OWNER = github?.context?.repo?.owner;
@@ -45,4 +46,24 @@ export async function fetchFilesBatchPR(
     ...pr.files.pageInfo,
     files: pr.files.edges.map(e => e.node.path),
   };
+}
+
+export async function fetchFilesBatchCommit(
+  client: github.GitHub,
+  sha: string,
+  owner: string = OWNER,
+  repo: string = REPO
+): Promise<string[]> {
+  try {
+    const resp = await client.repos.getCommit({
+      owner,
+      repo,
+      ref: sha,
+    });
+
+    return resp.data.files.map(f => f.filename);
+  } catch (err) {
+    core.error(err);
+    return [];
+  }
 }
