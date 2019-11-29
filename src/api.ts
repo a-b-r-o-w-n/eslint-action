@@ -39,8 +39,11 @@ export async function fetchFilesBatchPR(
   const pr = repository.pullRequest;
 
   if (!pr || !pr.files) {
+    core.info(`No PR or PR files detected`);
     return { files: [] };
   }
+
+  core.info(`PR with files detected: ${pr.files.edges.map(e => e.node.path)}`);
 
   return {
     ...pr.files.pageInfo,
