@@ -61,7 +61,11 @@ export async function fetchFilesBatchCommit(
       ref: sha,
     });
 
-    return resp.data.files.map(f => f.filename);
+    const filesChanged = resp.data.files.map(f => f.filename);
+
+    core.info(`Files changed: ${filesChanged}`);
+
+    return filesChanged;
   } catch (err) {
     core.error(err);
     return [];
