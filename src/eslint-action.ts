@@ -112,15 +112,36 @@ async function run(): Promise<void> {
       });
       const report = lint(files);
       const payload = processReport(report);
+      const maxChunk = 50;
 
-      await oktokit.checks.update({
-        owner: OWNER,
-        repo: REPO,
-        completed_at: new Date().toISOString(),
-        status: 'completed',
-        check_run_id: checkId,
-        ...payload,
-      });
+      if (payload?.output?.annotations.length > maxChunk) {
+        const chunks = Math.ceil(payload.output.annotations.length / maxChunk);
+        core.info(`There were ${payload.output.annotations.length} annotations, splitting into ${chunks} requests`);
+        for (let index = 0; index < chunks; index++) {
+          const startIndex = index * maxChunk;
+          await oktokit.checks.update({
+            owner: OWNER,
+            repo: REPO,
+            completed_at: new Date().toISOString(),
+            status: 'completed',
+            check_run_id: checkId,
+            conclusion: payload.conclusion,
+            output: {
+              ...payload.output,
+              annotations: payload.output.slice(startIndex, startIndex + maxChunk),
+            },
+          });
+        }
+      } else if (payload?.output?.annotations.length <= maxChunk) {
+        await oktokit.checks.update({
+          owner: OWNER,
+          repo: REPO,
+          completed_at: new Date().toISOString(),
+          status: 'completed',
+          check_run_id: checkId,
+          ...payload,
+        });
+      }
     } else {
       core.info('No files to lint.');
     }
