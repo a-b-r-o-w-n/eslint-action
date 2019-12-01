@@ -93,6 +93,7 @@ async function run(): Promise<void> {
 
   try {
     const oktokit = new github.GitHub(token);
+    core.info(`PR: ${prNumber}, SHA: ${getSha()}`);
     core.debug('Fetching files to lint.');
     const files = await getChangedFiles(oktokit, filesGlob, prNumber, getSha());
     core.debug(`${files.length} files match ${filesGlob}.`);

@@ -51,6 +51,16 @@ export async function fetchFilesBatchPR(
   };
 }
 
+/**
+ * Gets a list of all the files modified in this commit
+ *
+ * @param client The Octokit instance
+ * @param sha The SHA for the Commit
+ * @param owner The Owner of the Repository
+ * @param repo The Repository name (slug)
+ *
+ * @returns string[] An Array of the file paths modified in this commit, relative to the repository root
+ */
 export async function fetchFilesBatchCommit(
   client: github.GitHub,
   sha: string,
