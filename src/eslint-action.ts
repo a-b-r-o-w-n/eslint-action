@@ -62,9 +62,10 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
 
       core.debug(`Level ${severity} issue found on line ${line} [${ruleId}] ${message}`);
 
-      // if (severity !== 2) {
-      //   continue;
-      // }
+      // if ruleId is null, it's likely a parsing error, so let's skip it
+      if (!ruleId) {
+        continue;
+      }
 
       annotations.push({
         path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
