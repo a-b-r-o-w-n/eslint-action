@@ -4,7 +4,7 @@ Runs eslint on changed files and creates inline annotations with errors.
 
 ## Usage
 
-In `.github/workflows/main.yml:
+In `.github/workflows/main.yml`:
 
 ```yml
 name: Example Workflow
@@ -15,7 +15,7 @@ jobs:
   lint:
     steps:
       - uses: actions/checkout@v1
-      - uses: a-b-r-o-w-n/eslint-action@v1
+      - uses: psyked/eslint-action@v1
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           files: "src/**/*"

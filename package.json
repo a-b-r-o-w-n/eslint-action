@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a-b-r-o-w-n/eslint-action.git"
+    "url": "git+https://github.com/psyked/eslint-action.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/a-b-r-o-w-n/eslint-action/issues"
+    "url": "https://github.com/psyked/eslint-action/issues"
   },
-  "homepage": "https://github.com/a-b-r-o-w-n/eslint-action#readme",
+  "homepage": "https://github.com/psyked/eslint-action#readme",
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/github": "^1.1.0",
