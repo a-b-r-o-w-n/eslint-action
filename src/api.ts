@@ -13,7 +13,7 @@ export async function fetchFilesBatchPR(
 ): Promise<PrResponse> {
   const { repository } = await client.graphql(
     `
-    query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
+    query ChangedFilesBatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $prNumber) {
           files(first: 100, after: $startCursor) {

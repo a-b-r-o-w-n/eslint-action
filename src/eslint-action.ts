@@ -9,7 +9,7 @@ import { getChangedFiles } from './fileUtils';
 const { GITHUB_WORKSPACE } = process.env;
 const OWNER = github.context.repo.owner;
 const REPO = github.context.repo.repo;
-const CHECK_NAME = 'Eslint';
+const CHECK_NAME = 'ESLint';
 
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request;
@@ -60,15 +60,17 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
     for (const lintMessage of messages) {
       const { line, severity, ruleId, message } = lintMessage;
 
-      if (severity !== 2) {
-        continue;
-      }
+      core.debug(`Level ${severity} issue found on line ${line} [${ruleId}] ${message}`);
+
+      // if (severity !== 2) {
+      //   continue;
+      // }
 
       annotations.push({
         path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
         start_line: line,
         end_line: line,
-        annotation_level: 'failure',
+        annotation_level: severity === 2 ? 'failure' : 'warning',
         message: `[${ruleId}] ${message}`,
       });
     }
