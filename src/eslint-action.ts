@@ -128,7 +128,7 @@ async function run(): Promise<void> {
             conclusion: payload.conclusion,
             output: {
               ...payload.output,
-              annotations: payload.output.slice(startIndex, startIndex + maxChunk),
+              annotations: payload.output.annotations.slice(startIndex, startIndex + maxChunk),
             },
           });
         }
