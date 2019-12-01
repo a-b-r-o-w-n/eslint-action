@@ -92,10 +92,8 @@ async function run(): Promise<void> {
   try {
     const oktokit = new github.GitHub(token);
     core.debug('Fetching files to lint.');
-    console.log(`filesGlob: ${filesGlob}, prNumber: ${prNumber}, getSha(): ${getSha()}`);
     const files = await getChangedFiles(oktokit, filesGlob, prNumber, getSha());
     core.debug(`${files.length} files match ${filesGlob}.`);
-    console.log(`${files.length} files match ${filesGlob}.`);
 
     if (files.length > 0) {
       const {
