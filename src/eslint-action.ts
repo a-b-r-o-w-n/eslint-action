@@ -132,7 +132,7 @@ async function run(): Promise<void> {
               annotations: payload.output.annotations.slice(startIndex, startIndex + maxChunk),
             },
           });
-          core.info(`Got response with status of ${returnValue.status}, ${returnValue.data}`);
+          core.debug(`Got response with status of ${returnValue.status}, ${returnValue.data}`);
         }
       } else if (payload?.output?.annotations.length <= maxChunk) {
         await oktokit.checks.update({
