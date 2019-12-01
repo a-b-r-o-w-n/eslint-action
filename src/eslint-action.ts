@@ -119,7 +119,8 @@ async function run(): Promise<void> {
         core.info(`There were ${payload.output.annotations.length} annotations, splitting into ${chunks} requests`);
         for (let index = 0; index < chunks; index++) {
           const startIndex = index * maxChunk;
-          await oktokit.checks.update({
+          core.info(`Applying annotations ${startIndex} to ${startIndex + maxChunk}...`);
+          const returnValue = await oktokit.checks.update({
             owner: OWNER,
             repo: REPO,
             completed_at: new Date().toISOString(),
@@ -131,6 +132,7 @@ async function run(): Promise<void> {
               annotations: payload.output.annotations.slice(startIndex, startIndex + maxChunk),
             },
           });
+          core.info(`Got response with status of ${returnValue.status}, ${returnValue.data}`);
         }
       } else if (payload?.output?.annotations.length <= maxChunk) {
         await oktokit.checks.update({
