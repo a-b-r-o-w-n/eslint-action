@@ -15,7 +15,7 @@ jobs:
   lint:
     steps:
       - uses: actions/checkout@v1
-      - uses: psyked/eslint-action@v1
+      - uses: a-b-r-o-w-n/eslint-action@v1
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           files: "src/**/*"

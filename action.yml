@@ -17,5 +17,5 @@ runs:
   using: "node12"
   main: "lib/eslint-action.js"
 branding:
-  icon: "check-square"
-  color: "purple"
+  icon: "check-circle"
+  color: "yellow"
