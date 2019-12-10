@@ -51,8 +51,10 @@ function lint(files: string[]): CLIEngine.LintReport {
 }
 
 function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams> {
-  const { errorCount, results } = report;
+  const { results } = report;
   const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
+
+  let errorCount = 0;
 
   for (const result of results) {
     const { filePath, messages } = result;
@@ -65,6 +67,10 @@ function processReport(report: CLIEngine.LintReport): Partial<ChecksUpdateParams
       // if ruleId is null, it's likely a parsing error, so let's skip it
       if (!ruleId) {
         continue;
+      }
+
+      if (severity === 2) {
+        errorCount++;
       }
 
       annotations.push({
@@ -124,7 +130,7 @@ async function run(): Promise<void> {
             owner: OWNER,
             repo: REPO,
             completed_at: new Date().toISOString(),
-            status: 'completed',
+            status: startIndex + maxChunk <= payload.output.annotations.length ? 'in_progress' : 'completed',
             check_run_id: checkId,
             conclusion: payload.conclusion,
             output: {
