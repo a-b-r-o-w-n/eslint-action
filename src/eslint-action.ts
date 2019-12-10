@@ -120,35 +120,39 @@ async function run(): Promise<void> {
       const payload = processReport(report);
       const maxChunk = 50;
 
-      if (payload?.output?.annotations.length > maxChunk) {
-        const chunks = Math.ceil(payload.output.annotations.length / maxChunk);
-        core.info(`There were ${payload.output.annotations.length} annotations, splitting into ${chunks} requests`);
-        for (let index = 0; index < chunks; index++) {
-          const startIndex = index * maxChunk;
-          core.info(`Applying annotations ${startIndex} to ${startIndex + maxChunk}...`);
-          const returnValue = await oktokit.checks.update({
+      const annotationLength = payload?.output?.annotations?.length ?? 0;
+      if (payload?.output) {
+        if (annotationLength > maxChunk) {
+          const chunks = Math.ceil(annotationLength / maxChunk);
+          core.info(`There were ${annotationLength} annotations, splitting into ${chunks} requests`);
+          for (let index = 0; index < chunks; index++) {
+            const startIndex = index * maxChunk;
+            const endIndex = startIndex + maxChunk;
+            core.info(`Applying annotations ${startIndex} to ${startIndex + maxChunk}...`);
+            const returnValue = await oktokit.checks.update({
+              owner: OWNER,
+              repo: REPO,
+              completed_at: new Date().toISOString(),
+              status: endIndex <= annotationLength ? 'in_progress' : 'completed',
+              check_run_id: checkId,
+              conclusion: payload.conclusion,
+              output: {
+                ...payload.output,
+                annotations: payload?.output?.annotations?.slice(startIndex, endIndex),
+              },
+            });
+            core.debug(`Got response with status of ${returnValue.status}, ${returnValue.data}`);
+          }
+        } else if (annotationLength <= maxChunk) {
+          await oktokit.checks.update({
             owner: OWNER,
             repo: REPO,
             completed_at: new Date().toISOString(),
-            status: startIndex + maxChunk <= payload.output.annotations.length ? 'in_progress' : 'completed',
+            status: 'completed',
             check_run_id: checkId,
-            conclusion: payload.conclusion,
-            output: {
-              ...payload.output,
-              annotations: payload.output.annotations.slice(startIndex, startIndex + maxChunk),
-            },
+            ...payload,
           });
-          core.debug(`Got response with status of ${returnValue.status}, ${returnValue.data}`);
         }
-      } else if (payload?.output?.annotations.length <= maxChunk) {
-        await oktokit.checks.update({
-          owner: OWNER,
-          repo: REPO,
-          completed_at: new Date().toISOString(),
-          status: 'completed',
-          check_run_id: checkId,
-          ...payload,
-        });
       }
     } else {
       core.info('No files to lint.');
