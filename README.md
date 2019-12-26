@@ -4,7 +4,7 @@ Runs eslint on changed files and creates inline annotations with errors.
 
 ## Usage
 
-In `.github/workflows/main.yml:
+In `.github/workflows/main.yml`:
 
 ```yml
 name: Example Workflow
