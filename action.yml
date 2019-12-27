@@ -13,6 +13,8 @@ inputs:
   ignore:
     description: "Glob pattern to ignore from linting."
     default: "**/node_modules/**"
+  working-directory:
+    description: "Set if project root is not git root"
 runs:
   using: "node12"
   main: "lib/eslint-action.js"

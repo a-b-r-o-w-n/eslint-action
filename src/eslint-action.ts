@@ -41,10 +41,12 @@ const processArrayInput = (key: string, required = false): string[] => {
 function lint(files: string[]): CLIEngine.LintReport {
   const extensions = processArrayInput('extensions', true);
   const ignoreGlob = processArrayInput('ignore');
+  const cwd = core.getInput('working-directory');
 
   const linter = new eslint.CLIEngine({
     extensions,
     ignorePattern: ignoreGlob,
+    cwd,
   });
 
   return linter.executeOnFiles(files);
