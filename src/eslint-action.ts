@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
+import path from 'path';
+
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import eslint, { CLIEngine } from 'eslint';
@@ -41,7 +43,15 @@ const processArrayInput = (key: string, required = false): string[] => {
 function lint(files: string[]): CLIEngine.LintReport {
   const extensions = processArrayInput('extensions', true);
   const ignoreGlob = processArrayInput('ignore');
-  const cwd = core.getInput('working-directory');
+  let cwd = core.getInput('working-directory');
+
+  if (cwd && !path.isAbsolute(cwd)) {
+    cwd = path.resolve(cwd);
+  } else if (!cwd) {
+    cwd = process.cwd();
+  }
+
+  core.debug(`Starting lint engine with cwd: ${cwd}`);
 
   const linter = new eslint.CLIEngine({
     extensions,
