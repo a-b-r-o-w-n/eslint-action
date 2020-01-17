@@ -13,7 +13,7 @@ export const filterFiles = (files: string[], globs: string[]): string[] => {
 
   for (const file of filtered) {
     if (fs.existsSync(path.resolve(file))) {
-      result.push(file);
+      result.push(path.resolve(file));
     }
   }
 
