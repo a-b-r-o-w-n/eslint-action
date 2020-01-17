@@ -13,6 +13,8 @@ inputs:
   ignore:
     description: "Glob pattern to ignore from linting."
     default: "**/node_modules/**"
+  working-directory:
+    description: "Directory where eslint should execute."
 runs:
   using: "node12"
   main: "lib/eslint-action.js"
