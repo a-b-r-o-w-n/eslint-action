@@ -59,7 +59,9 @@ export function processResults(
     }
 
     annotations.push(...fileAnnotations);
-    logFileAnnotations(relFilePath, fileAnnotations);
+    if (core.isDebug()) {
+      logFileAnnotations(relFilePath, fileAnnotations);
+    }
   }
 
   return {

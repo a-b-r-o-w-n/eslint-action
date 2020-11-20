@@ -7,6 +7,7 @@ jest.mock("@actions/core", () => ({
   error: jest.fn(),
   startGroup: jest.fn(),
   endGroup: jest.fn(),
+  isDebug: () => true,
 }));
 
 jest.mock("../src/inputs", () => ({
