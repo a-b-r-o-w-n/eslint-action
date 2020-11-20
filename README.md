@@ -23,4 +23,6 @@ jobs:
           files: "src/**/*"
           ignore: "src/some-file-to-ignore.js"
           extensions: ".js,.ts"
+          working-directory: "./my-package"
+          quiet: "false"
 ```
