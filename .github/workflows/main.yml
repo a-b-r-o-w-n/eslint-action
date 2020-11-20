@@ -1,4 +1,4 @@
-name: Example Workflow
+name: Unit Tests
 
 on: [pull_request, push]
 
@@ -7,7 +7,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install Dependencies
+        run: npm install
       - name: Lint
         uses: ./
         with:
@@ -15,6 +25,8 @@ jobs:
           files: "src/**/*"
       - name: Test
         run: npm test -- --coverage
+      - name: Build
+        run: npm run build
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
