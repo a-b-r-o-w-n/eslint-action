@@ -1,14 +1,9 @@
 {
   "git.ignoreLimitWarning": true,
-  "eslint.enable": true,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
+  "cSpell.words": ["octocat", "octokit", "repos"]
 }
