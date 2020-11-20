@@ -17,7 +17,7 @@ inputs:
     description: "Directory where eslint should execute."
 runs:
   using: "node12"
-  main: "lib/eslint-action.js"
+  main: "lib/index.js"
 branding:
   icon: "check-circle"
   color: "yellow"
