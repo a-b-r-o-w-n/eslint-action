@@ -1,6 +1,6 @@
 # Eslint Annotate
 
-[![Coverage Status](https://coveralls.io/repos/github/a-b-r-o-w-n/eslint-action/badge.svg?branch=master)](https://coveralls.io/github/a-b-r-o-w-n/eslint-action?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/a-b-r-o-w-n/eslint-action/badge.svg?branch=main)](https://coveralls.io/github/a-b-r-o-w-n/eslint-action?branch=main)
 
 Runs eslint on changed files and creates inline annotations with errors.
 
