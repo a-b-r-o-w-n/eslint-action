@@ -7,6 +7,12 @@ const processArrayInput = (key: string, required = false): string[] => {
     .map((e) => e.trim());
 };
 
+const processBooleanInput = (key: string): boolean => {
+  const value = core.getInput(key).toLowerCase();
+
+  return value === "true";
+};
+
 const inputs = {
   /* istanbul ignore next */
   get token() {
@@ -28,6 +34,10 @@ const inputs = {
   /* istanbul ignore next */
   get cwd() {
     return core.getInput("working-directory");
+  },
+
+  get quiet() {
+    return processBooleanInput("quiet");
   },
 };
 
