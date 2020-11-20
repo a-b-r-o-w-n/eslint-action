@@ -3,6 +3,10 @@ import { CHECK_NAME, processResults } from "../src/processResults";
 
 jest.mock("@actions/core", () => ({
   debug: jest.fn(),
+  warning: jest.fn(),
+  error: jest.fn(),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
 }));
 
 jest.mock("../src/inputs", () => ({

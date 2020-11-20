@@ -8,6 +8,20 @@ const { GITHUB_WORKSPACE } = process.env;
 
 export const CHECK_NAME = "ESLint";
 
+function logFileAnnotations(filePath: string, annotations: any[]) {
+  core.startGroup(filePath);
+  annotations.forEach((a) => {
+    const { message, annotation_level } = a;
+
+    if (annotation_level === "warning") {
+      core.warning(message);
+    } else {
+      core.error(message);
+    }
+  });
+  core.endGroup();
+}
+
 export function processResults(
   results: ESLint.LintResult[]
 ): Partial<RestEndpointMethodTypes["checks"]["update"]["parameters"]> {
@@ -17,6 +31,8 @@ export function processResults(
 
   for (const result of results) {
     const { filePath, messages } = result;
+    const relFilePath = filePath.replace(`${GITHUB_WORKSPACE}/`, "");
+    const fileAnnotations: any[] = [];
 
     for (const lintMessage of messages) {
       const { line, severity, ruleId, message } = lintMessage;
@@ -35,14 +51,17 @@ export function processResults(
         continue;
       }
 
-      annotations.push({
-        path: filePath.replace(`${GITHUB_WORKSPACE}/`, ""),
+      fileAnnotations.push({
+        path: relFilePath,
         start_line: line,
         end_line: line,
         annotation_level: severity === 2 ? "failure" : "warning",
         message: `[${ruleId}] ${message}`,
       });
     }
+
+    annotations.push(...fileAnnotations);
+    logFileAnnotations(relFilePath, fileAnnotations);
   }
 
   return {
