@@ -1,15 +1,12 @@
-import * as core from '@actions/core';
-import * as github from '@actions/github';
-
-const OWNER = github?.context?.repo?.owner;
-const REPO = github?.context?.repo?.repo;
+import * as core from "@actions/core";
+import { Octokit } from "@octokit/rest";
 
 export async function fetchFilesBatchPR(
-  client: github.GitHub,
+  client: Octokit,
   prNumber: number,
-  startCursor?: string,
-  owner: string = OWNER,
-  repo: string = REPO
+  owner: string,
+  repo: string,
+  startCursor?: string
 ): Promise<PrResponse> {
   const { repository } = await client.graphql(
     `
@@ -43,11 +40,11 @@ export async function fetchFilesBatchPR(
     return { files: [] };
   }
 
-  core.info(`PR with files detected: ${pr.files.edges.map(e => e.node.path)}`);
+  core.info(`PR with files detected: ${pr.files.edges.map((e) => e.node.path)}`);
 
   return {
     ...pr.files.pageInfo,
-    files: pr.files.edges.map(e => e.node.path),
+    files: pr.files.edges.map((e) => e.node.path),
   };
 }
 
@@ -62,25 +59,27 @@ export async function fetchFilesBatchPR(
  * @returns string[] An Array of the file paths modified in this commit, relative to the repository root
  */
 export async function fetchFilesBatchCommit(
-  client: github.GitHub,
+  client: Octokit,
   sha: string,
-  owner: string = OWNER,
-  repo: string = REPO
+  owner: string,
+  repo: string
 ): Promise<string[]> {
   try {
+    core.debug(`Getting commit data for ${owner}/${repo}#${sha}`);
     const resp = await client.repos.getCommit({
       owner,
       repo,
       ref: sha,
     });
 
-    const filesChanged = resp.data.files.map(f => f.filename);
+    const filesChanged = resp.data.files.map((f) => f.filename);
 
     core.info(`Files changed: ${filesChanged}`);
 
     return filesChanged;
   } catch (err) {
     core.error(err);
+    core.setFailed("Error occurred getting files from commit.");
     return [];
   }
 }

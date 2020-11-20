@@ -1,30 +1,33 @@
-import * as core from '@actions/core';
-import * as github from '@actions/github';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import * as core from "@actions/core";
+import { Octokit } from "@octokit/rest";
 
-import { fetchFilesBatchPR, fetchFilesBatchCommit } from '../src/api';
+import { fetchFilesBatchPR, fetchFilesBatchCommit } from "../src/api";
 
-import { getCommit as getCommitResponse } from './fixtures';
+import { getCommit as getCommitResponse } from "./fixtures";
 
-jest.mock('@actions/core');
-jest.mock('@actions/github');
+jest.mock("@actions/core");
+jest.mock("@actions/github");
+jest.mock("@octokit/rest");
 
-describe('fetchFilesBatchPR', () => {
-  const client = new github.GitHub('some-token');
+describe("fetchFilesBatchPR", () => {
+  const client = new Octokit({ auth: "some-token" });
   const prNumber = 123;
-  const startCursor = 'cursor-1';
-  const owner = 'myorg';
-  const repo = 'my-repo';
+  const startCursor = "cursor-1";
+  const owner = "myorg";
+  const repo = "my-repo";
 
   beforeEach(() => {
+    // @ts-ignore
     client.graphql = jest.fn();
 
-    (client.graphql as jest.Mock).mockResolvedValue({
+    ((client.graphql as unknown) as jest.Mock).mockResolvedValue({
       repository: {},
     });
   });
 
-  it('makes a graphql query', async () => {
-    await fetchFilesBatchPR(client, prNumber, startCursor, owner, repo);
+  it("makes a graphql query", async () => {
+    await fetchFilesBatchPR(client, prNumber, owner, repo, startCursor);
 
     expect(client.graphql).toHaveBeenCalledWith(expect.any(String), {
       owner,
@@ -34,31 +37,31 @@ describe('fetchFilesBatchPR', () => {
     });
   });
 
-  describe('when PR not found', () => {
-    it('returns empty array', async () => {
+  describe("when PR not found", () => {
+    it("returns empty array", async () => {
       expect(await fetchFilesBatchPR(client, prNumber, startCursor, owner, repo)).toEqual({ files: [] });
     });
   });
 
-  describe('when PR found', () => {
+  describe("when PR found", () => {
     beforeEach(() => {
-      (client.graphql as jest.Mock).mockResolvedValue({
+      ((client.graphql as unknown) as jest.Mock).mockResolvedValue({
         repository: {
           pullRequest: {
             files: {
               pageInfo: {
                 hasNextPage: true,
-                endCursor: 'cursor-2',
+                endCursor: "cursor-2",
               },
               edges: [
                 {
                   node: {
-                    path: 'file-1',
+                    path: "file-1",
                   },
                 },
                 {
                   node: {
-                    path: 'file-2',
+                    path: "file-2",
                   },
                 },
               ],
@@ -68,32 +71,29 @@ describe('fetchFilesBatchPR', () => {
       });
     });
 
-    it('returns list of files and pageInfo', async () => {
+    it("returns list of files and pageInfo", async () => {
       expect(await fetchFilesBatchPR(client, prNumber, startCursor, owner, repo)).toEqual({
-        files: ['file-1', 'file-2'],
+        files: ["file-1", "file-2"],
         hasNextPage: true,
-        endCursor: 'cursor-2',
+        endCursor: "cursor-2",
       });
     });
   });
 });
 
-describe('fetchFilesBatchCommit', () => {
-  const client = new github.GitHub('some-token');
-  const sha = 'abc123';
-  const owner = 'myorg';
-  const repo = 'my-repo';
+describe("fetchFilesBatchCommit", () => {
+  const client = new Octokit({ auth: "some-token" });
+  const sha = "abc123";
+  const owner = "myorg";
+  const repo = "my-repo";
 
   beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore : missing endpoint property
-    client.repos.getCommit = jest.fn();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    (client.repos.getCommit as jest.Mock).mockResolvedValue({ data: getCommitResponse });
+    client.repos = { getCommit: jest.fn() };
+    ((client.repos.getCommit as unknown) as jest.Mock).mockResolvedValue({ data: getCommitResponse });
   });
 
-  it('fetches commit info using v3 api', async () => {
+  it("fetches commit info using v3 api", async () => {
     await fetchFilesBatchCommit(client, sha, owner, repo);
     expect(client.repos.getCommit).toHaveBeenCalledWith({
       owner,
@@ -102,35 +102,33 @@ describe('fetchFilesBatchCommit', () => {
     });
   });
 
-  describe('when response is valid', () => {
-    it('returns list of filenames', async () => {
+  describe("when response is valid", () => {
+    it("returns list of filenames", async () => {
       expect(await fetchFilesBatchCommit(client, sha, owner, repo)).toEqual([
-        '.github/workflows/main.yml',
-        'action.yml',
-        'lib/eslint-action.js',
-        'node_modules/minimatch/package.json',
-        'package.json',
-        'src/eslint-action.ts',
-        'src/types.d.ts',
+        ".github/workflows/main.yml",
+        "action.yml",
+        "lib/eslint-action.js",
+        "node_modules/minimatch/package.json",
+        "package.json",
+        "src/eslint-action.ts",
+        "src/types.d.ts",
       ]);
     });
   });
 
-  describe('when there is an error', () => {
-    const error = new Error('Bad Request');
+  describe("when there is an error", () => {
+    const error = new Error("Bad Request");
 
     beforeEach(() => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
-      (client.repos.getCommit as jest.Mock).mockRejectedValue(error);
+      ((client.repos.getCommit as unknown) as jest.Mock).mockRejectedValue(error);
     });
 
-    it('logs an error to console', async () => {
+    it("logs an error to console", async () => {
       await fetchFilesBatchCommit(client, sha, owner, repo);
       expect(core.error).toHaveBeenCalledWith(error);
     });
 
-    it('returns an empty array', async () => {
+    it("returns an empty array", async () => {
       expect(await fetchFilesBatchCommit(client, sha, owner, repo)).toEqual([]);
     });
   });

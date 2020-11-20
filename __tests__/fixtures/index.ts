@@ -1,1 +1,1 @@
-export * from './getCommit';
+export * from "./getCommit";

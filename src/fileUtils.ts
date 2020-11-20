@@ -1,11 +1,17 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-import * as core from '@actions/core';
-import * as github from '@actions/github';
-import micromatch from 'micromatch';
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+import micromatch from "micromatch";
+import { Octokit } from "@octokit/rest";
 
-import { fetchFilesBatchPR, fetchFilesBatchCommit } from './api';
+import { fetchFilesBatchPR, fetchFilesBatchCommit } from "./api";
+
+/* istanbul ignore next */
+const getOwner = () => github.context?.repo?.owner;
+/* istanbul ignore next */
+const getRepo = () => github.context?.repo?.repo;
 
 export const filterFiles = (files: string[], globs: string[]): string[] => {
   const result: string[] = [];
@@ -20,21 +26,23 @@ export const filterFiles = (files: string[], globs: string[]): string[] => {
   return result;
 };
 
-async function getFilesFromPR(client: github.GitHub, prNumber: number): Promise<string[]> {
+async function getFilesFromPR(client: Octokit, prNumber: number): Promise<string[]> {
   let files: string[] = [];
   let hasNextPage = true;
   let startCursor: string | undefined = undefined;
 
+  core.debug(`Getting files from pull request #${prNumber}`);
+
   while (hasNextPage) {
     try {
-      const result = await fetchFilesBatchPR(client, prNumber, startCursor);
+      const result = await fetchFilesBatchPR(client, prNumber, getOwner(), getRepo(), startCursor);
 
       files = files.concat(result.files);
       hasNextPage = result.hasNextPage;
       startCursor = result.endCursor;
     } catch (err) {
       core.error(err);
-      core.setFailed('Error occurred getting changed files.');
+      core.setFailed("Error occurred getting changed files.");
       hasNextPage = false;
     }
   }
@@ -43,7 +51,7 @@ async function getFilesFromPR(client: github.GitHub, prNumber: number): Promise<
 }
 
 export async function getChangedFiles(
-  client: github.GitHub,
+  client: Octokit,
   filesGlob: string[],
   prNumber: number | undefined,
   sha: string
@@ -53,7 +61,7 @@ export async function getChangedFiles(
   if (prNumber) {
     files = await getFilesFromPR(client, prNumber);
   } else {
-    files = await fetchFilesBatchCommit(client, sha);
+    files = await fetchFilesBatchCommit(client, sha, getOwner(), getRepo());
   }
 
   return filterFiles(files, filesGlob);
