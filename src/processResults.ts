@@ -11,12 +11,12 @@ export const CHECK_NAME = "ESLint";
 function logFileAnnotations(filePath: string, annotations: any[]) {
   core.startGroup(filePath);
   annotations.forEach((a) => {
-    const { message, annotation_level } = a;
+    const { message, annotation_level, start_line } = a;
 
     if (annotation_level === "warning") {
-      core.warning(message);
+      core.warning(`${message} (Line ${start_line})`);
     } else {
-      core.error(message);
+      core.error(`${message} (Line ${start_line})`);
     }
   });
   core.endGroup();
@@ -36,8 +36,6 @@ export function processResults(
 
     for (const lintMessage of messages) {
       const { line, severity, ruleId, message } = lintMessage;
-
-      core.debug(`Level ${severity} issue found on line ${line} [${ruleId}] ${message}`);
 
       // if ruleId is null, it's likely a parsing error, so let's skip it
       if (!ruleId) {
