@@ -32,3 +32,12 @@ describe("files", () => {
     expect(core.getInput).toHaveBeenCalledWith("files", { required: false });
   });
 });
+
+describe("quiet", () => {
+  it.each(["true", "TRUE", "True"])("supports %s", (input) => {
+    ((core.getInput as unknown) as jest.Mock).mockReturnValue(input);
+
+    expect(inputs.quiet).toEqual(true);
+    expect(core.getInput).toHaveBeenCalledWith("quiet");
+  });
+});

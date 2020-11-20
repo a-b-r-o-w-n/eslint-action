@@ -2,6 +2,8 @@ import * as core from "@actions/core";
 import { RestEndpointMethodTypes } from "@octokit/rest";
 import { ESLint } from "eslint";
 
+import inputs from "./inputs";
+
 const { GITHUB_WORKSPACE } = process.env;
 
 export const CHECK_NAME = "ESLint";
@@ -28,6 +30,9 @@ export function processResults(
 
       if (severity === 2) {
         errorCount++;
+      } else if (inputs.quiet) {
+        // skip message if quiet is true
+        continue;
       }
 
       annotations.push({

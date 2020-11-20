@@ -1,7 +1,12 @@
+import inputs from "../src/inputs";
 import { CHECK_NAME, processResults } from "../src/processResults";
 
 jest.mock("@actions/core", () => ({
   debug: jest.fn(),
+}));
+
+jest.mock("../src/inputs", () => ({
+  quiet: false,
 }));
 
 const errorMsg = {
@@ -63,4 +68,14 @@ it("passes the check if there are no errors", () => {
   ]);
 
   expect(payload.conclusion).toEqual("success");
+});
+
+it("does not include warnings if quiet option is true", () => {
+  Object.defineProperty(inputs, "quiet", {
+    get: () => true,
+  });
+  // @ts-expect-error
+  const payload = processResults(mockResults);
+  expect(payload.output?.annotations).toHaveLength(3);
+  expect(payload.output?.annotations?.some((a) => a.annotation_level === "warning")).toBe(false);
 });

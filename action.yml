@@ -7,14 +7,22 @@ inputs:
   extensions:
     description: "File extensions to lint. Ex: .js,.jsx,.ts,.tsx"
     default: ".js,.jsx,.ts,.tsx"
+    required: false
   files:
     description: "Glob pattern of files to be linted."
     default: "**/*"
+    required: false
   ignore:
     description: "Glob pattern to ignore from linting."
     default: "**/node_modules/**"
+    required: false
   working-directory:
     description: "Directory where eslint should execute."
+    required: false
+  quiet:
+    description: "Silence annotations for ESLint warnings."
+    default: "false"
+    required: false
 runs:
   using: "node12"
   main: "lib/index.js"
