@@ -25,7 +25,7 @@ inputs:
     required: false
 runs:
   using: "node12"
-  main: "lib/index.js"
+  main: "lib/eslint-action.js"
 branding:
   icon: "check-circle"
   color: "yellow"
