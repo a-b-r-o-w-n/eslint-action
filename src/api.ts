@@ -72,11 +72,11 @@ export async function fetchFilesBatchCommit(
       ref: sha,
     });
 
-    const filesChanged = resp.data.files.map((f) => f.filename);
+    const filesChanged = resp.data.files?.map((f) => f.filename).filter(Boolean) as string[];
 
     core.info(`Files changed: ${filesChanged}`);
 
-    return filesChanged;
+    return filesChanged ?? [];
   } catch (err) {
     core.error(err);
     core.setFailed("Error occurred getting files from commit.");
