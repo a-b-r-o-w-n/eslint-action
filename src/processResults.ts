@@ -1,4 +1,3 @@
-import * as core from "@actions/core";
 import { ESLint, Linter } from "eslint";
 
 import inputs from "./inputs";
@@ -30,8 +29,6 @@ export function processResults(lintResults: ESLint.LintResult[]): number {
     const { filePath, messages } = result;
     const relFilePath = filePath.replace(`${GITHUB_WORKSPACE}/`, "");
 
-    core.startGroup(relFilePath);
-
     for (const message of messages) {
       if (!message.ruleId) {
         continue;
@@ -42,20 +39,18 @@ export function processResults(lintResults: ESLint.LintResult[]): number {
         case 1:
           if (inputs.quiet) break;
 
-          core.warning(formatMessage(relFilePath, message));
+          console.log("::warning", formatMessage(relFilePath, message));
           break;
         // error
         case 2:
           errorCount++;
 
-          core.error(formatMessage(relFilePath, message));
+          console.log("::error", formatMessage(relFilePath, message));
           break;
         default:
           break;
       }
     }
-
-    core.endGroup();
   }
 
   return errorCount;
